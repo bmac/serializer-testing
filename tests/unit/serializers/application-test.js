@@ -41,6 +41,14 @@ module('Unit | Serializer | application', function(hooks) {
     this.createSnapshot = function(type, description) {
       return new FakeSnapshot(this.owner, type, description)
     }
+
+
+    this.normalizeResponse = function(modelName, payload, id, requestType) {
+      let store = this.owner.lookup('service:store');
+      let serializer = store.serializerFor(modelName);
+      let modelClass = this.owner.factoryFor('model:' + modelName).class;
+      return serializer.normalizeResponse(store, modelClass, payload, id, requestType);
+    }
   })
 
   test('serializeIntoHash', function(assert) {
@@ -91,12 +99,53 @@ module('Unit | Serializer | application', function(hooks) {
   });
 
 
+  test('serializeIntoHash', function(assert) {
+    let payload = {
+      "data": {
+        "attributes": {
+          "created-at": 1489550400000,
+          "duration": "45 Minutes",
+          "enclosure-url": "https://example.com/audio.mp3",
+          "image": "https://example.com/image.svg",
+          "title": "087: The JSON API and Orbit.js with Dan Gebhardt",
+          "updated-at": 1489550400000
+        },
+        "id": 1,
+        "relationships": {
+          "podcast": {
+            "data": {
+              "id": 2,
+              "type": "podcasts"
+            }
+          }
+        },
+        "type": "episodes"
+      }
+    };
 
-  // serializer.serializeIntoHash(data, type, snapshot, { includeId: true });
+    let normalizedResponse = this.normalizeResponse('episode', payload, 1, 'findRecord')
 
-  // let normalizedResponse = serializer.normalizeResponse(store, modelClass, payload, id, requestType);
-
-
-  // normalize
-  // serialize
+    assert.deepEqual(normalizedResponse, {
+      "data": {
+        "attributes": {
+          "createdAt": 1489550400000,
+          "duration": "45 Minutes",
+          "enclosureUrl": "https://example.com/audio.mp3",
+          "image": "https://example.com/image.svg",
+          "title": "087: The JSON API and Orbit.js with Dan Gebhardt",
+          "updatedAt": 1489550400000
+        },
+        "id": "1",
+        "relationships": {
+          "podcast": {
+            "data": {
+              "id": 2,
+              "type": "podcast"
+            }
+          }
+        },
+        "type": "episode"
+      }
+    })
+  })
 });
