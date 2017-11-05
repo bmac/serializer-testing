@@ -99,7 +99,7 @@ module('Unit | Serializer | application', function(hooks) {
   });
 
 
-  test('serializeIntoHash', function(assert) {
+  test('normalizeResponse', function(assert) {
     let payload = {
       "data": {
         "attributes": {
